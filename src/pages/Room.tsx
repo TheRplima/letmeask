@@ -4,14 +4,13 @@ import { useParams } from "react-router-dom";
 import { Button } from "../components/Button";
 import { RoomCode } from "../components/RoomCode";
 
-import { database, ref, set, get } from "../services/firebase";
+import { database, ref, set, onValue } from "../services/firebase";
 import { useAuth } from "../hooks/useAuth";
 
 import { v4 as uuidv4 } from "uuid";
 
 import logoImg from "../assets/images/logo.svg";
 import "../styles/room.scss";
-import { onValue } from "firebase/database";
 
 type Author = {
   name: string;

@@ -15,7 +15,7 @@ export function NewRoom() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [newRoom, setNewRoom] = useState("");
-  const roomId = uuidv4();
+  const roomId = uuidv4().split("-")[0];
 
   async function handleCreateRoom(event: FormEvent) {
     event.preventDefault();
@@ -26,7 +26,7 @@ export function NewRoom() {
 
     const roomRef = ref(database, `rooms/${roomId}`);
 
-    const firebaseRoom = await set(roomRef, {
+    await set(roomRef, {
       title: newRoom,
       authorId: user?.id,
     });

@@ -31,7 +31,7 @@ export function NewRoom() {
       authorId: user?.id,
     });
 
-    navigate(`/rooms/${roomId}`);
+    navigate(`/admin/rooms/${roomId}`);
   }
 
   return (

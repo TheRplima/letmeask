@@ -4,7 +4,7 @@ import { Button } from "../components/Button";
 import { RoomCode } from "../components/RoomCode";
 import { Question } from "../components/Question";
 
-// import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../hooks/useAuth";
 import { useRoom } from "../hooks/useRoom";
 
 import logoImg from "../assets/images/logo.svg";
@@ -13,15 +13,23 @@ import checkImg from "../assets/images/check.svg";
 import answerImg from "../assets/images/answer.svg";
 
 import "../styles/room.scss";
-import { database, ref } from "../services/firebase";
-import { remove, update } from "firebase/database";
+import {
+  database,
+  ref,
+  remove,
+  update,
+  auth,
+  signOut,
+} from "../services/firebase";
+import {} from "firebase/database";
 
 type RoomParams = {
   id: string;
 };
 
 export function AdminRoom() {
-  //   const { user } = useAuth();
+  const { user } = useAuth();
+
   const params = useParams<RoomParams>();
 
   const roomId = params.id || "";
@@ -29,6 +37,11 @@ export function AdminRoom() {
   const { title, questions } = useRoom(roomId);
 
   const navigate = useNavigate();
+
+  // if (!user) {
+  //   alert("Você não tem permissão para estar aqui!");
+  //   navigate("/");
+  // }
 
   async function handleCloseRoom() {
     if (window.confirm("Tem certeza que deseja encerrar esta sala?")) {
@@ -84,6 +97,18 @@ export function AdminRoom() {
     }
   }
 
+  function handleUserLogout() {
+    if (window.confirm("Tem certeza que deseja encerrar sua sessão?")) {
+      signOut(auth)
+        .then(() => {
+          navigate("/");
+        })
+        .catch((error) => {
+          // An error happened.
+        });
+    }
+  }
+
   return (
     <div id="page-room">
       <header>
@@ -92,8 +117,13 @@ export function AdminRoom() {
           <div>
             <RoomCode code={roomId} />
             <Button isOutlined onClick={handleCloseRoom}>
-              Encerrar sala
+              Fechar sala
             </Button>
+            {user && (
+              <Button isOutlined onClick={handleUserLogout}>
+                Encerrar sessão
+              </Button>
+            )}
           </div>
         </div>
       </header>

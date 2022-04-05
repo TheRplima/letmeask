@@ -1,11 +1,11 @@
 import { FormEvent, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 import { Button } from "../components/Button";
 import { RoomCode } from "../components/RoomCode";
 import { Question } from "../components/Question";
 
-import { database, ref, set } from "../services/firebase";
+import { database, ref, set, signOut, auth } from "../services/firebase";
 import { useAuth } from "../hooks/useAuth";
 import { useRoom } from "../hooks/useRoom";
 import { v4 as uuidv4 } from "uuid";
@@ -19,13 +19,15 @@ type RoomParams = {
 };
 
 export function Room() {
-  const { user } = useAuth();
+  const { user, signInWithGoogle } = useAuth();
   const params = useParams<RoomParams>();
   const [newQuestion, setNewQuestion] = useState("");
 
   const roomId = params.id || "";
 
-  const { title, questions } = useRoom(roomId);
+  const { title, questions, roomAuthorId } = useRoom(roomId);
+
+  const navigate = useNavigate();
 
   async function handleSendQuestion(event: FormEvent) {
     event.preventDefault();
@@ -76,12 +78,51 @@ export function Room() {
     }
   }
 
+  async function handleUserLogin() {
+    if (!user) {
+      await signInWithGoogle();
+    }
+  }
+
+  function handleUserLogout() {
+    if (
+      window.confirm(
+        "Tem certeza que deseja encerrar sua sessão? É necessário estar logado para enviar perguntas!"
+      )
+    ) {
+      signOut(auth)
+        .then(() => {
+          navigate("/");
+        })
+        .catch((error) => {
+          // An error happened.
+        });
+    }
+  }
+
   return (
     <div id="page-room">
       <header>
         <div className="content">
           <img src={logoImg} alt="Letmeask" />
-          <RoomCode code={roomId} />
+          <div>
+            <RoomCode code={roomId} />
+            {user?.id === roomAuthorId && (
+              <Button
+                isOutlined
+                onClick={() => {
+                  navigate(`/admin/rooms/${roomId}`);
+                }}
+              >
+                Administrar sala
+              </Button>
+            )}
+            {user && (
+              <Button isOutlined onClick={handleUserLogout}>
+                Encerrar sessão
+              </Button>
+            )}
+          </div>
         </div>
       </header>
       <main className="content">
@@ -105,7 +146,8 @@ export function Room() {
               </div>
             ) : (
               <span>
-                Para enviar uma pergunta, <button>faça seu login</button>.
+                Para enviar uma pergunta,{" "}
+                <button onClick={handleUserLogin}>faça seu login</button>.
               </span>
             )}
             <Button type="submit" disabled={!user}>
